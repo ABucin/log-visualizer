@@ -1,0 +1,15 @@
+@CHARSET "ISO-8859-1";
+
+#chart_format {
+	margin: 4px 0 4px 0;
+}
+
+label {
+	font-family: sans-serif;
+	font-size: 12px;
+	padding: 0 10px 0 10px;
+}
+
+input {
+	margin: 5px 0 5px 0;
+}

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Report Generator</title>
+<link type="text/css" href="resources/css/report_gen.css"
+	rel="stylesheet" />
+<link type="text/css" href="resources/css/multiselect.css"
+	rel="stylesheet" />
+<link type="text/css" href="resources/css/styles.css" rel="stylesheet" />
+<link type="text/css" href="resources/css/graph.css" rel="stylesheet" />
+<link type="text/css" href="resources/css/picker.css" rel="stylesheet" />
+<link type="text/css"
+	href="resources/css/smoothness/jquery-ui-1.8.20.custom.css"
+	rel="stylesheet" />
+
+<script type="text/javascript" src="resources/js/d3.v2.min.js"></script>
+<script type="text/javascript" src="resources/js/jquery/jquery-1.7.2.min.js"></script>
+<script type="text/javascript"
+	src="resources/js/jquery/jquery-ui-1.8.20.custom.min.js"></script>
+<script type="text/javascript"
+	src="resources/js/jquery/jquery.date.time.picker.js"></script>
+<script type="text/javascript" src="resources/js/jquery/jquery.multi.select.js"></script>
+<script type="text/javascript" src="resources/js/report_gen.js"></script>
+<script type="text/javascript" src="resources/js/charts/utils_chart.js"></script>
+<script type="text/javascript" src="resources/js/charts/chart_plot.js"></script>
+<script type="text/javascript" src="resources/js/charts/chart_bar.js"></script>
+<script type="text/javascript" src="resources/js/charts/chart_pie.js"></script>
+<script type="text/javascript" src="resources/js/charts/chart_timeline.js"></script>
+<script type="text/javascript" src="resources/js/charts/chart_conveyor.js"></script>
+<script type="text/javascript" src="resources/js/charts/chart_tree.js"></script>
+<script type="text/javascript" src="resources/js/colorbrewer.js"></script>
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		loadDocument();		
+	});
+</script>
+
+</head>
+<body>
+	<div id="content">
+		<div id="log_type">
+			<label for="log_type">Server Log Type:</label> <input type="radio"
+				id="log_radio1" name="radio" checked="checked" /><label
+				for="log_radio1">access</label> <input type="radio" id="log_radio2"
+				name="radio" /><label for="log_radio2">internal</label>
+		</div>
+
+		<label for="start_date">Start Date:</label> <input id="start_date"
+			type="text" /><label for="end_date">End Date:</label> <input
+			id="end_date" type="text" /> <br />
+
+		<div id="chart_format">
+			<label for="chart_format">Chart Format:</label> <input
+				type="radio" id="chart_radio" name="chart_radio" checked="checked"/><label for="chart_radio">plot</label><input
+				type="radio" id="chart_radio2" name="chart_radio" /><label for="chart_radio2">conveyor</label><input
+				type="radio" id="chart_radio3" name="chart_radio" /><label for="chart_radio3">tree</label>
+		</div>
+
+		<label for="servers">Servers: </label> <select id="servers"
+			name="servers" multiple="multiple"></select><br />
+
+		<div id="internal_log_filters">
+			<label for="message_type">Select Message Types:</label> <select
+				id="message_type" name="message_type" multiple="multiple">
+				<option value="ERROR">ERROR</option>
+				<option value="WARN">WARN</option>
+				<option value="ALERT">ALERT</option>
+				<option value="NOTICE">NOTICE</option>
+			</select><br />
+			
+			<label for="class_box">Class (optional):</label>
+			<input id="class_box" type="text"/><br/>
+			
+			<label for="message_box">Message (optional):</label>
+			<input id="message_box" type="text"/>
+		</div>
+
+		<div id="access_log_filters">
+			<label for="http_code">HTTP code:</label><select
+					id="http_code" name="http_code"
+					multiple="multiple"></select><br/>
+
+			<label for="url_parameter_type">URL Parameter Type:</label> <select
+					id="url_parameter_type" name="url_parameter_type"
+					multiple="multiple">
+					<option value="GET">GET</option>
+					<option value="POST">POST</option>
+				</select><br />
+
+			<div id="object_size">
+				<label for="object_size">Returned Object Size:</label> <input
+					type="radio" id="size_radio1" name="size_radio" checked="checked" /><label
+					for="size_radio1">at least</label> <input type="radio"
+					id="size_radio2" name="size_radio" /><label for="size_radio2">exactly</label><input
+					type="radio" id="size_radio3" name="size_radio" /><label
+					for="size_radio3">at most</label> <input id="object_size_box"
+					type="text" />
+			</div>
+			
+			<label for="start_ip">Start IP:</label>
+			<input id="start_ip" type="text"/>
+			<label for="end_ip">End IP:</label>
+			<input id="end_ip" type="text"/>
+		</div>
+
+		<input id="submit_button" type="button" value="Submit"/>
+		
+		<input id="back_button" type="button" value="Back"/>
+	</div>
+	<div id='conv_viz'></div>
+	<div id='plot_viz'></div> 
+	<div id='tree_viz'></div> 
+</body>
+</html>

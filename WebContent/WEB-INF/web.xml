@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="WebApp_ID" version="3.0">
+  <display-name>ServerLogVisualization</display-name>
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+  </welcome-file-list>
+  <servlet>
+    <servlet-name>AccessLineServlet</servlet-name>
+    <servlet-class>visualization.servlet.AccessLineServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>InternalLineServlet</servlet-name>
+    <servlet-class>visualization.servlet.InternalLineServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>AccessLogGenerator</servlet-name>
+    <servlet-class>visualization.servlet.LogGeneratorServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>ReportGenerator</servlet-name>
+    <servlet-class>visualization.servlet.ReportGeneratorServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>ReaderService</servlet-name>
+    <servlet-class>visualization.servlet.ReaderServiceServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AccessLineServlet</servlet-name>
+    <url-pattern>/acc_line</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>InternalLineServlet</servlet-name>
+    <url-pattern>/int_line</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>AccessLogGenerator</servlet-name>
+    <url-pattern>/acc_log_gen</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>ReportGenerator</servlet-name>
+    <url-pattern>/rep_gen</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>ReaderService</servlet-name>
+    <url-pattern>/start_service</url-pattern>
+  </servlet-mapping>
+</web-app>

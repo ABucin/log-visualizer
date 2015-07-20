@@ -1,0 +1,29 @@
+@CHARSET "ISO-8859-1";
+
+#content{
+	float: left;
+}
+
+#content div{
+	padding: 4px 0 4px 0;
+}
+
+#object_size_box{
+	margin-left: 10px;
+}
+
+button{
+	margin: 4px 0 4px 0;
+}
+
+select {
+	margin: 0 4px 0 4px;
+}
+
+#http_code {
+	width: 30px;
+}
+
+#object_size_box {
+	width: 50px;
+}

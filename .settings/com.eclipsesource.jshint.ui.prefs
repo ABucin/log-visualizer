@@ -1,0 +1,4 @@
+eclipse.preferences.version=1
+included=//*.js
+options=strict\: true
+projectSpecificOptions=true

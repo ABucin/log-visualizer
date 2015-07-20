@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Server Log Visualization</title>
+<link type="text/css" href="resources/css/graph.css" rel="stylesheet" />
+<link type="text/css" href="resources/css/styles.css" rel="stylesheet" />
+<link type="text/css"
+	href="resources/css/smoothness/jquery-ui-1.8.20.custom.css"
+	rel="stylesheet" />
+
+<script type="text/javascript"
+	src="resources/js/jquery/jquery-1.7.2.min.js"></script>
+<script type="text/javascript"
+	src="resources/js/jquery/jquery-ui-1.8.20.custom.min.js"></script>
+<script type="text/javascript"
+	src="resources/js/jquery/jquery.timeout.js"></script>
+	<script type="text/javascript"
+	src="resources/js/jquery/jquery.date.time.picker.js"></script>
+<script type="text/javascript" src="resources/js/colorbrewer.js"></script>
+<script type="text/javascript" src="resources/js/d3.v2.min.js"></script>
+<script type="text/javascript" src="resources/js/charts/utils_chart.js"></script>
+<script type="text/javascript" src="resources/js/charts/chart_plot.js"></script>
+<script type="text/javascript" src="resources/js/charts/chart_bar.js"></script>
+<script type="text/javascript" src="resources/js/charts/chart_pie.js"></script>
+<script type="text/javascript" src="resources/js/charts/chart_tree.js"></script>
+<script type="text/javascript"
+	src="resources/js/charts/chart_timeline.js"></script>
+<script type="text/javascript"
+	src="resources/js/charts/chart_conveyor.js"></script>
+<script type="text/javascript"
+	src="resources/js/charts/chart_conveyor_parallel.js"></script>
+<script type="text/javascript">
+	var toggled_chart = false,
+	toggled_replay = false,
+	toggled_service = false;
+
+	$(document).ready(function() {
+
+		var start_date = $('#start_date'), end_date = $('#end_date');
+
+		start_date.datetimepicker({
+			showSecond : true,
+			stepSecond : 1,
+			timeFormat : 'hh:mm:ss'
+		});
+		end_date.datetimepicker({
+			showSecond : true,
+			stepSecond : 1,
+			timeFormat : 'hh:mm:ss'
+		});
+		
+		//we hide unnecessary buttons
+		$("#status").hide();
+		$("#chart_format").hide();
+		$("#chart_replay").hide();
+		$("#serv_config").hide();
+		$("#chart_format").tabs();
+		$("#chart_replay").tabs();
+		$('#chart_format').bind('tabsselect', function(event, ui) {
+			var ix = ui.index;
+			removeOldContent();
+			stopUpdates();
+			generateGraph(ix);
+		});
+		$("#chart_replay").bind('tabsselect', function(event, ui) {
+			var ix = ui.index;
+			removeOldContent();
+		});
+
+		$("#service_button").button().click(function(){
+			stopUpdates();
+			$("#chart_replay").hide();
+			$("#chart_format").hide();
+			toggled_replay = false;
+			toggled_chart = false;
+			if(toggled_service == false){
+				toggled_service = true;
+				$("#serv_config").show();
+			} else {
+				$("#serv_config").hide();
+				toggled_service = false;
+			}
+		});
+		$("#service_start_button").button().click(function() {
+			var access_path = $("#access_log_path").val(),
+			internal_path = $("#internal_log_path").val();
+			$("#status").show();
+			$.post("start_service", {
+				access_path: access_path,
+				internal_path: internal_path,
+				run: true
+			});
+		});
+		$("#service_stop_button").button().click(function() {
+			var access_path = $("#access_log_path").val(),
+			internal_path = $("#internal_log_path").val();
+			$("#status").hide();
+			$.post("start_service", {
+				access_path: access_path,
+				internal_path: internal_path,
+				run: false
+			});
+		});
+		
+		$("#report_button").button().click(function() {
+			stopUpdates();
+			window.location = "report_gen.html";
+		});
+		$("#replay_button").button().click;
+		//$("#stop_ajax").button().click(stopUpdates);
+		$("#vis_button").button().click(function() {
+			stopUpdates();
+			$("#serv_config").hide();
+			$("#chart_replay").hide();
+			toggled_replay = false;
+			toggled_service = false;
+			if (toggled_chart == false) {
+				$("#chart_format").show();
+				var ix = $("#chart_format").tabs('option', 'selected');
+				generateGraph(ix);
+				toggled_chart = true;
+			} else {
+				$("#chart_format").hide();
+				removeOldContent();
+				stopUpdates();
+				toggled_chart = false;
+			}
+		});
+		$("#replay_button").button().click(function() {
+			//removeOldContent();
+			stopUpdates();
+			$("#chart_format").hide();
+			$("#serv_config").hide();
+			toggled_service = false;
+			toggled_chart = false;
+			if (toggled_replay == false) {
+				$("#chart_replay").show();
+				toggled_replay = true;
+			} else {
+				$("#chart_replay").hide();
+				removeOldContent();
+				toggled_replay = false;
+			}
+		});
+		
+		$('#start_button').button().click(function() {	
+			var std = start_date.datetimepicker('getDate'),
+			etd = end_date.datetimepicker('getDate');
+			
+			var sd = +std,
+			ed = +etd,
+			ix = $("#chart_replay").tabs('option', 'selected');
+			generateReplay(ix, sd, ed);
+		});
+		$('#end_button').button().click(function(){
+			stopReplay();
+		});
+		
+		$("#access_log_path").val("C:/Apache Tomcat/logs/random_access_log.txt");
+		$("#internal_log_path").val("C:/Apache Tomcat/logs/random_internal_log.txt");
+		
+	});
+
+	//stops periodic updates
+	function stopUpdates() {
+		$.doTimeout('bar_loop');
+		$.doTimeout('pie_loop');
+		$.doTimeout('conveyor_loop');
+		$.doTimeout('timeline_loop');
+	}
+	
+	//stops replay
+	function stopReplay() {
+		$.doTimeout('conveyor_loop');
+		$.doTimeout('timeline_loop');
+	}
+
+	//generates graph according to supplied index
+	function generateGraph(ix) {
+		switch (ix) {
+		case (0): {
+			BarChart.generateBarChart();
+			$.doTimeout('bar_loop', 3000, function() {
+				BarChart.generateBarChart();
+				return true;
+			});
+			break;
+		}
+		case (1): {
+			PieChart.generatePieChart();
+			$.doTimeout('pie_loop', 3000, function() {
+				PieChart.generatePieChart();
+				return true;
+			});
+			break;
+		}
+		case (2): {
+			TimelineChart.generateTimelineChart(null, null, "#line_viz");
+			$.doTimeout('timeline_loop',
+					TimelineChart.transition_duration + 1000, function() {
+						TimelineChart.generateTimelineChart(null, null, "#line_viz");
+						return true;
+			});
+			break;
+		}
+		case (3): {
+			ConveyorParallelChart.generateConveyorParallelChart(null, null, "#conv_viz");
+			$.doTimeout('conveyor_loop', 2000, function() {
+				ConveyorParallelChart.updateConveyorParallelChart(null, null, "#conv_viz");
+				return true;
+			});
+			break;
+		}
+		}
+	}
+
+	//generates replay according to supplied index	
+	function generateReplay(ix, sd, ed) {
+		switch (ix) {
+		case (0): {
+			//timeline visualization.chart
+			var td = sd + TimelineChart.transition_duration + 1000;
+			console.log("s: "+sd +" t: "+td +" e: "+ed);
+			TimelineChart.generateTimelineChart(sd, td, "#line_replay");
+			sd = td;
+			
+			$.doTimeout('timeline_loop',
+				TimelineChart.transition_duration + 1000, function() {
+						timelineReplay();
+						return true;
+			});
+			break;
+		}
+		case (1): {
+			//conveyor visualization.chart
+			var td = sd + 1000;
+			ConveyorParallelChart.generateConveyorParallelChart(sd, td, "#conv_replay");
+			sd = td;
+			
+			$.doTimeout('conveyor_loop', 1000, function() {
+				conveyorParallelReplay();
+				return true;
+			});
+			break;
+		}
+		}
+
+		function conveyorParallelReplay(){
+			var td = sd + 1000;
+			console.log("t: "+td +" e: "+ed);
+			if (sd < ed) {
+				ConveyorParallelChart.updateConveyorParallelChart(sd, td, "#conv_replay");
+				sd = td;
+			} else {
+				stopReplay();
+			}
+		}
+		
+		function timelineReplay() {
+			var td = sd + TimelineChart.transition_duration + 1000;
+			console.log("s: "+sd +" t: "+td +" e: "+ed);
+			if (sd <= ed) {
+				TimelineChart.generateTimelineChart(sd, td, "#line_replay");
+				sd = td;
+			} else {
+				$.doTimeout('timeline_loop');
+			}
+		}
+	}
+
+	function removeOldContent() {
+		d3.selectAll("svg").remove();
+	}
+</script>
+
+</head>
+<body>
+	<input id="service_button" type="button" value="Configure Service" />
+	<input id="vis_button" type="button" value="Visualize Data" />
+	<input id="replay_button" type="button" value="Replay Data" />
+	<input id="report_button" type="button" value="Generate Reports" />
+
+	<div id="serv_config">
+		<label for="internal_log_path">Internal log path: </label> <input
+			id="internal_log_path" type="text" size="60" /><br /> <label
+			for="access_log_path">Access log path: </label> <input
+			id="access_log_path" type="text" size="60" /><br /> <input
+			id="service_start_button" type="button" value="Start Service">
+			<input
+			id="service_stop_button" type="button" value="Stop Service">
+			<label id="status" style="color: red;">Service is running!</label>
+	</div>
+
+	<div id="chart_format">
+		<ul>
+			<li><a href="#bar_viz">bar</a></li>
+			<li><a href="#pie_viz">pie</a></li>
+			<li><a href="#line_viz">timeline</a></li>
+			<li><a href="#conv_viz">conveyor</a></li>
+		</ul>
+
+		<div id='line_viz'></div>
+		<div id='conv_viz'></div>
+		<div id='bar_viz'></div>
+		<div id='pie_viz'></div>
+	</div>
+
+	<div id="chart_replay">
+		<ul>
+			<li><a href="#line_replay">timeline</a></li>
+			<li><a href="#conv_replay">conveyor</a></li>
+		</ul>
+
+		<br/><label for="start_date">Start Date:</label> <input id="start_date"
+			type="text" /><label for="end_date">End Date:</label> <input
+			id="end_date" type="text" /> <br />
+		<input id="start_button" type="button" value="Start Replay"/>
+		<input id="end_button" type="button" value="End Replay"/>
+
+		<div id='line_replay'></div>
+		<div id='conv_replay'></div>
+	</div>
+</body>
+</html>
