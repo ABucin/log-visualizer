@@ -1,6 +1,6 @@
 # log-visualizer
 
-This repo contains the files for the log visualizer application.
+This repo contains the files for the log visualizer application. You can see it in action, here: https://youtu.be/vZt07P_Dpus
 
 Pre-requisites:
 
